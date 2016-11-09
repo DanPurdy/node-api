@@ -23,34 +23,28 @@ router.post('/signup', (req, res) => {
   });
 });
 
-router.post('/authenticate', (req, res) => {
+router.post('/authenticate', (req, res, next) => {
   User.findOne({ name: req.body.name }, (err, user) => {
-    if (err) throw err;
+    if (err) return next(err);
 
     if (!user) {
-      res.send({ success: false, msg: 'Authentication failed. User not found.' });
-    } else {
-      // check if password matches
-      user.comparePassword(req.body.password, (passErr, isMatch) => {
-        if (isMatch && !passErr) {
-          const payload = {
-            aud: jwtConfig.audience,
-            iss: jwtConfig.issuer,
-            iat: jwtConfig.issuedAt(),
-            exp: jwtConfig.expiresIn(jwtConfig.issuedAt()),
-            user: {
-              name: user.name,
-              email: user.email,
-              password: null,
-              role: user.role,
-            },
-          };
-          const token = jwt.encode(payload, config.secret);
-          return res.json({ success: true, token: `JWT ${token}` });
-        }
-        return res.send({ success: false, msg: 'Authentication failed. Wrong password.' });
-      });
+      return res.send({ success: false, msg: 'Authentication failed. User not found.' });
     }
+    // check if password matches
+    return user.comparePassword(req.body.password, (passErr, isMatch) => {
+      if (isMatch && !passErr) {
+        const payload = {
+          aud: jwtConfig.audience,
+          iss: jwtConfig.issuer,
+          iat: jwtConfig.issuedAt(),
+          exp: jwtConfig.expiresIn(jwtConfig.issuedAt()),
+          user,
+        };
+        const token = jwt.encode(payload, config.secret);
+        return res.json({ success: true, token: `JWT ${token}` });
+      }
+      return res.send({ success: false, msg: 'Authentication failed. Wrong password.' });
+    });
   });
 });
 

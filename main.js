@@ -12,8 +12,12 @@ const users = require('./app/routes/users');
 const app = express();
 const port = process.env.PORT || 8080;
 
+require('./config/passport')(passport);
+
 // get our request parameters
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false,
+}));
 app.use(bodyParser.json());
 
 // log to console
@@ -34,5 +38,32 @@ console.log(`The api is listening at: http://localhost:${port}`); // eslint-disa
 // connect to database
 mongoose.connect(config.database);
 
-// pass passport for configuration
-require('./config/passport')(passport);
+
+// catch 404 and forward to error handler
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+  app.use((err, req, res) => {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err,
+    });
+  });
+}
+
+// production error handler
+// no stacktraces leaked to user
+app.use((err, req, res) => {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {},
+  });
+});
