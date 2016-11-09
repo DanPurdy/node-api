@@ -1,35 +1,35 @@
-const config = require('../../config/settings');
 const express = require('express');
-const jwt = require('jwt-simple');
 const passport = require('passport');
 const User = require('../models/user');
+const sanitize = require('../utils/user');
 
 const router = express.Router();
 
-const getToken = (headers) => {
-  if (headers && headers.authorization) {
-    const parted = headers.authorization.split(' ');
-    if (parted.length === 2) {
-      return parted[1];
+router.get('/user', passport.authenticate('jwt', { session: false }), (req, res, next) => {
+  User.findOne({ name: req.user.name }, (err, user) => {
+    if (err) return next(err);
+    if (!user) {
+      return res.status(404).send({ success: false, msg: 'Authentication failed. User not found.' });
     }
-    return null;
-  }
-  return null;
-};
+    return res.json(sanitize(user));
+  });
+});
 
-router.get('/list', passport.authenticate('jwt', { session: false }), (req, res) => {
-  const token = getToken(req.headers);
-  if (token) {
-    const decoded = jwt.decode(token, config.secret);
-    return User.findOne({ name: decoded.user.name }, (err, user) => {
-      if (err) throw err;
-      if (!user) {
-        return res.status(403).send({ success: false, msg: 'Authentication failed. User not found.' });
-      }
-      return res.json({ success: true, msg: `Welcome to the member area ${user.name}!` });
-    });
+router.put('/user', passport.authenticate('jwt', { session: false }), (req, res, next) => {
+  if (req.user._id.toString() === req.body._id) {
+    return User.findOneAndUpdate(
+      { _id: req.body._id },
+      { $set: req.body },
+      { new: true },
+      (err, user) => {
+        if (err) return next(err);
+        if (!user) {
+          return res.status(404).send({ success: false, msg: 'User not found.' });
+        }
+        return res.json(sanitize(user));
+      });
   }
-  return res.status(403).send({ success: false, msg: 'No token provided.' });
+  return res.status(403).send({ success: false, msg: 'Not Authorized' });
 });
 
 module.exports = router;
