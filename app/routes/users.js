@@ -6,12 +6,30 @@ const sanitize = require('../utils/user');
 const router = express.Router();
 
 router.get('/user', passport.authenticate('jwt', { session: false }), (req, res, next) => {
-  User.findOne({ name: req.user.name }, (err, user) => {
+  User.findOne({ username: req.user.username }, (err, user) => {
     if (err) return next(err);
     if (!user) {
       return res.status(404).send({ success: false, msg: 'Authentication failed. User not found.' });
     }
     return res.json(sanitize(user));
+  });
+});
+
+router.post('/check', passport.authenticate('jwt', { session: false }), (req, res, next) => {
+  let query = Object.create(null);
+  if (req.body.parameter === 'username') {
+    query = { username: req.body.value };
+  } else if (req.body.parameter === 'email') {
+    query = { email: req.body.value };
+  } else {
+    return res.status(400).send({ error: 'You must specify the correct parameters' });
+  }
+  return User.findOne(query, (err, user) => {
+    if (err) next(err);
+    if (user) {
+      return res.status(200).send({ success: true, exists: true });
+    }
+    return res.status(200).send({ success: true, exists: false });
   });
 });
 
