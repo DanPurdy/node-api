@@ -1,9 +1,11 @@
 const express = require('express');
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const cors = require('cors');
 const config = require('./config/settings'); // get db config file
 const auth = require('./app/routes/auth');
 const index = require('./app/routes/index');
@@ -11,6 +13,18 @@ const users = require('./app/routes/users');
 
 const app = express();
 const port = process.env.PORT || 8080;
+const securityOptions = {
+  key: fs.readFileSync('./ssl/server.key'),
+  cert: fs.readFileSync('./ssl/server.crt'),
+  requestCert: false,
+};
+const corsOptions = {
+  origin: 'https://localhost:8000',
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+const secureServer = require('https').createServer(securityOptions, app);
+
 
 require('./config/passport')(passport);
 
@@ -19,6 +33,7 @@ app.use(bodyParser.urlencoded({
   extended: false,
 }));
 app.use(bodyParser.json());
+app.use(cors(corsOptions));
 
 // log to console
 app.use(morgan('dev'));
@@ -32,7 +47,7 @@ app.use('/api', index, auth);
 app.use('/api/users', users);
 
 // Start the server
-app.listen(port);
+secureServer.listen(port);
 console.log(`The api is listening at: http://localhost:${port}`); // eslint-disable-line no-console
 
 // connect to database
