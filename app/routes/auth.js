@@ -6,12 +6,12 @@ const jwtConfig = require('../../config/jwt').jwtConf;
 
 const router = express.Router();
 
-router.post('/signup', (req, res) => {
-  if (!req.body.name || !req.body.password) {
-    return res.json({ success: false, msg: 'Please pass name and password.' });
+router.post('/register', (req, res) => {
+  if (!req.body.username || !req.body.password) {
+    return res.json({ success: false, msg: 'Please pass username and password.' });
   }
   const newUser = new User({
-    name: req.body.name,
+    username: req.body.username,
     password: req.body.password,
     email: req.body.email,
   });
@@ -24,7 +24,7 @@ router.post('/signup', (req, res) => {
 });
 
 router.post('/authenticate', (req, res, next) => {
-  User.findOne({ name: req.body.name }, (err, user) => {
+  User.findOne({ name: req.body.username }, (err, user) => {
     if (err) return next(err);
 
     if (!user) {
