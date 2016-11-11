@@ -37,7 +37,7 @@ const UserSchema = new Schema({
 
 UserSchema.pre('save', function (next) {
   if (this.isModified('password') || this.isNew) {
-    bcrypt.genSalt(10, (err, salt) => {
+    return bcrypt.genSalt(10, (err, salt) => {
       if (err) {
         return next(err);
       }
@@ -50,6 +50,7 @@ UserSchema.pre('save', function (next) {
       });
     });
   }
+  return next();
 });
 
 UserSchema.methods.comparePassword = function (passw, cb) {
