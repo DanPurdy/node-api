@@ -6,29 +6,12 @@ const jwtConfig = require('../../config/jwt').jwtConf;
 
 const router = express.Router();
 
-router.post('/register', (req, res) => {
-  if (!req.body.username || !req.body.password) {
-    return res.json({ success: false, msg: 'Please pass username and password.' });
-  }
-  const newUser = new User({
-    username: req.body.username,
-    password: req.body.password,
-    email: req.body.email,
-  });
-  return newUser.save((err) => {
-    if (err) {
-      return res.json({ success: false, msg: 'Username already exists.' });
-    }
-    return res.json({ success: true, msg: 'Successful created new user.' });
-  });
-});
-
 router.post('/authenticate', (req, res, next) => {
-  User.findOne({ name: req.body.username }, (err, user) => {
+  User.findOne({ username: req.body.username }, (err, user) => {
     if (err) return next(err);
 
     if (!user) {
-      return res.send({ success: false, msg: 'Authentication failed. User not found.' });
+      return res.status(400).json({ success: false, msg: 'Authentication failed. User not found.' });
     }
     // check if password matches
     return user.comparePassword(req.body.password, (passErr, isMatch) => {
@@ -41,9 +24,9 @@ router.post('/authenticate', (req, res, next) => {
           user,
         };
         const token = jwt.encode(payload, config.secret);
-        return res.json({ success: true, token: `JWT ${token}` });
+        return res.status(200).json({ success: true, token: `JWT ${token}` });
       }
-      return res.send({ success: false, msg: 'Authentication failed. Wrong password.' });
+      return res.status(403).send({ success: false, msg: 'Authentication failed. Wrong password.' });
     });
   });
 });
