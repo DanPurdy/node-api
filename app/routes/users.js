@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post('/register', (req, res) => {
   if (!req.body.username || !req.body.password) {
-    return res.status(400).json({ success: false, msg: 'Please pass username and password.' });
+    return res.status(400).json({ success: false, message: 'Please pass username and password.' });
   }
   const newUser = new User({
     username: req.body.username,
@@ -25,9 +25,9 @@ router.post('/register', (req, res) => {
   });
   return newUser.save((err) => {
     if (err) {
-      return res.status(400).json({ success: false, msg: 'This user already exists.' });
+      return res.status(400).json({ success: false, message: 'This user already exists.' });
     }
-    return res.status(201).json({ success: true, msg: 'Successfully created new user.' });
+    return res.status(201).json({ success: true, message: 'Successfully created new user.' });
   });
 });
 
@@ -71,7 +71,7 @@ router.get('/user', passport.authenticate('jwt', { session: false }), (req, res,
   User.findOne({ username: req.user.username }, (err, user) => {
     if (err) return next(err);
     if (!user) {
-      return res.status(404).json({ success: false, msg: 'Authentication failed. User not found.' });
+      return res.status(404).json({ success: false, message: 'Authentication failed. User not found.' });
     }
     return res.status(200).json(sanitize(user));
   });
@@ -82,12 +82,12 @@ router.get('/:userId', passport.authenticate('jwt', { session: false }), (req, r
     return User.findOne({ username: req.user.username }, (err, user) => {
       if (err) return next(err);
       if (!user) {
-        return res.status(404).json({ success: false, msg: 'Authentication failed. User not found.' });
+        return res.status(404).json({ success: false, message: 'Authentication failed. User not found.' });
       }
       return res.status(200).json(sanitize(user));
     });
   }
-  return res.status(403).json({ success: false, msg: 'You are not authorised to request this resource' });
+  return res.status(403).json({ success: false, message: 'You are not authorised to request this resource' });
 });
 
 router.put('/:userId', passport.authenticate('jwt', { session: false }), (req, res, next) => {
@@ -100,7 +100,7 @@ router.put('/:userId', passport.authenticate('jwt', { session: false }), (req, r
       });
     });
   }
-  return res.status(403).json({ success: false, msg: 'Not Authorized' });
+  return res.status(403).json({ success: false, message: 'Not Authorized' });
 });
 
 module.exports = router;
