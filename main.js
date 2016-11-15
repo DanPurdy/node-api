@@ -19,7 +19,7 @@ const securityOptions = {
   requestCert: false,
 };
 const corsOptions = {
-  origin: 'https://localhost:8000',
+  origin: config.corsAddress,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 

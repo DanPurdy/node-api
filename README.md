@@ -33,11 +33,15 @@ Inside this file you can add the requirements for the application such as the fo
 module.exports = {
   secret: 'supersecretpassword',
   database: 'mongodb://127.0.0.1:27017/nodeApiDb',
+  corsAddress: 'https://localhost:8000'
 };
 ```
 
 Make sure to point the database address to the correct IP port and Database name. In the above config my database is named nodeApiDb.
 
+**CORS SUPPORT**
+
+Please add the url for the web application you wish to connect to the API to in the `corsAddress` field in the settings file.
 
 ### Profit
 
