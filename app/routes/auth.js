@@ -3,6 +3,7 @@ const jwt = require('jwt-simple');
 const User = require('../models/user');
 const config = require('../../config/settings'); // get db config file
 const jwtConfig = require('../../config/jwt').jwtConf;
+const sanitize = require('../utils/user');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ router.post('/authenticate', (req, res, next) => {
           iss: jwtConfig.issuer,
           iat: jwtConfig.issuedAt(),
           exp: jwtConfig.expiresIn(jwtConfig.issuedAt()),
-          user,
+          user: sanitize(user),
         };
         const token = jwt.encode(payload, config.secret);
         return res.status(200).json({ success: true, token: `JWT ${token}` });
